@@ -3,17 +3,26 @@
 //
 
 #include "Point.h"
+#include "Exceptions.h"
 #include <cmath>
 #include <sstream>
+
 
 
 using namespace Clustering;
 
 
-unsigned int Point::__idGen =0;
+unsigned int Point::__idGen = 0;
+const char Point::POINT_VALUE_DELIM = ',';
 
-Point::Point(int dim)
+void Point::rewindIdGen() {
+    __idGen--;
+}
+
+Point::Point(unsigned int dim)
 {
+    if(dim == 0)
+        throw ZeroDimensionsEx(); // exception if dimensions is zero
     __id = __idGen;
     ++__idGen;
 
@@ -24,7 +33,7 @@ Point::Point(int dim)
     }
 }
 
-Point::Point(int dim, double * array)
+Point::Point(unsigned int dim, double * array)
 {
     __id = __idGen;
     ++__idGen;
@@ -50,6 +59,8 @@ Point::Point(const Point & entry)
 
 Point &Point::operator=(const Point & entry)
 {
+    if(__dim != entry.__dim)
+        throw DimensionalityMismatchEx(__dim,entry.__dim);
     if(this != &entry)
     {
         delete[] __values;
@@ -80,22 +91,27 @@ int Point::getId() const {
     return __id;
 }
 
-int Point::getDims() const {
+unsigned int Point::getDims() const {
     return __dim;
 }
 
-void Point::setValue(int index, double value) {
-
+void Point::setValue(unsigned int index, double value) {
+    if(index > __dim-1)
+        throw OutOfBoundsEx(__dim,index);
     __values[index]= value;
 }
 
-double Point::getValue(int index) const
+double Point::getValue(unsigned int index) const
 {
+    if(index > __dim-1)
+        throw OutOfBoundsEx(__dim,index);
     return __values[index];
 }
 
 double Point::distanceTo(const Point & PointTo) const
 {
+    if(__dim != PointTo.__dim)
+        throw DimensionalityMismatchEx(__dim,PointTo.__dim);
     double SqreOfDistance =0; //S = sqrt(x2-x1)^2+ (y2-y1)^2........
     for (int i = 0; i < __dim; ++i)
     {
@@ -136,13 +152,23 @@ const Point Point::operator/(double divider) const {
     return *this;
 }
 
-double& Point::operator[](int index) {
-
+double& Point::operator[](unsigned int index) {
+    if(index > __dim-1)
+        throw OutOfBoundsEx(__dim,index);
     return __values[index];
 }
 
+const double& Point::operator[](unsigned int index) const {
+    if(index > __dim-1)
+        throw OutOfBoundsEx(__dim,index);
+    return __values[index];
+}
+
+
 Point& Clustering::operator+=(Point& lhs, const Point& rhs)
 {
+    if(lhs.__dim != rhs.__dim)
+        throw DimensionalityMismatchEx(lhs.__dim,rhs.__dim);
     for (int i = 0; i < lhs.__dim; ++i) {
         lhs.__values[i] += rhs.__values[i];
     }
@@ -151,6 +177,8 @@ Point& Clustering::operator+=(Point& lhs, const Point& rhs)
 
 Point& Clustering::operator-=(Point& lhs, const Point& rhs)
 {
+    if(lhs.__dim != rhs.__dim)
+        throw DimensionalityMismatchEx(lhs.__dim,rhs.__dim);
     for (int i = 0; i < lhs.__dim; ++i) {
         lhs.__values[i] -=rhs.__values[i];
     }
@@ -174,18 +202,20 @@ Point const Clustering::operator-(const Point& lhs, const Point& rhs)
 }
 
 bool Clustering::operator==(const Point &a, const Point &b) {
-bool answer =false;
-    if (a.__id == b.__id) {
-        if (a.__dim == b.__dim) {
-            answer = true;
-            for (int i = 0; i<a.__dim; ++i) {
-                if (a.__values[i] != b.__values[i]) {
-                    answer = false;
-                    break;
+    if(a.__dim != b.__dim)
+        throw DimensionalityMismatchEx(a.__dim,b.__dim);
+    bool answer =false;
+        if (a.__id == b.__id) {
+            if (a.__dim == b.__dim) {
+                answer = true;
+                for (int i = 0; i<a.__dim; ++i) {
+                    if (a.__values[i] != b.__values[i]) {
+                        answer = false;
+                        break;
+                    }
                 }
             }
         }
-    }
     return answer;
 }
 
@@ -195,7 +225,8 @@ bool Clustering::operator!=(const Point& a, const Point &b)
 }
 
 bool Clustering::operator<(const Point& a, const Point &b){
-
+    if(a.__dim != b.__dim)
+        throw DimensionalityMismatchEx(a.__dim,b.__dim);
     if (a != b) {
         if (a.__dim == b.__dim) {
             for (int i = 0; i < a.__dim; ++i) {
@@ -223,6 +254,7 @@ bool Clustering::operator<=(const Point& a, const Point &b) {
 }
 
 std::ostream & Clustering::operator<<(std::ostream & output, const Point & somePoint){
+
     for (int i = 0; i < somePoint.__dim; ++i) {
         output << somePoint.__values[i];
         if(i !=(somePoint.__dim-1))
@@ -234,9 +266,16 @@ std::ostream & Clustering::operator<<(std::ostream & output, const Point & someP
 std::istream & Clustering::operator >>(std::istream & input, Point & somePoint) {
 
     std::string temp;
+    getline(input,temp);
+        // checking file line match the dimensions of point
+        int n = std::count(temp.begin(), temp.end(), Point::POINT_VALUE_DELIM);
+        if((n+1)!=somePoint.__dim)
+            throw DimensionalityMismatchEx((n+1),somePoint.__dim);
+
+    std::stringstream line(temp);
     for (int i = 0; i < somePoint.__dim; ++i) {
-        getline(input, temp, ',');
-        std::stringstream ss (temp);
+        getline(line, temp, Point::POINT_VALUE_DELIM); // TODO error in the temp
+        std::stringstream ss(temp);
         ss >> somePoint.__values[i];
     }
     return input;
