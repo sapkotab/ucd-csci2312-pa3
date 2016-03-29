@@ -7,6 +7,7 @@
 #include "Point.h"
 #include "Exceptions.h"
 #include <fstream>
+#include <cassert>
 
 Clustering::KMeans::KMeans(unsigned int dim, unsigned int k, std::string filename, unsigned int maxIter) {
     //file streams
@@ -100,6 +101,7 @@ void Clustering::KMeans::run() {
 
     int moves = 100;
     int iter = 0;
+
 
     // stop loop if move is less than 100 and exceed the maximum iterator
     while(moves > 0 && iter < __maxIter){
