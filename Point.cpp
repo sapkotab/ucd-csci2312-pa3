@@ -267,7 +267,7 @@ std::istream & Clustering::operator >>(std::istream & input, Point & somePoint) 
 
     std::string temp;
     getline(input,temp);
-        // checking file line match the dimensions of point
+        // checking file line match the dimensions of Points
         int n = std::count(temp.begin(), temp.end(), Point::POINT_VALUE_DELIM);
         if((n+1)!=somePoint.__dim)
             throw DimensionalityMismatchEx((n+1),somePoint.__dim);
@@ -280,3 +280,4 @@ std::istream & Clustering::operator >>(std::istream & input, Point & somePoint) 
     }
     return input;
 }
+//done

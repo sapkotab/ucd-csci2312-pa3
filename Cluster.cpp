@@ -389,9 +389,9 @@ Cluster::Move::Move(const Point &p, Cluster &from, Cluster &to):__p(p),__from(fr
     perform();
 }
 
-void Cluster::Move::perform() { // is this method supposed to call Move?
+void Cluster::Move::perform() {
     __from.centroid.setValid(false);
     __to.centroid.setValid(false);
 }
-
+//done
 
