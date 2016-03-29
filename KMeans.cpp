@@ -38,7 +38,9 @@ Clustering::KMeans::KMeans(unsigned int dim, unsigned int k, std::string filenam
     for (int j = 0; j < k; ++j) {
         __initCentroids[j] = new Point(__dimensionality);
     }
-    __clusters[0]->pickCentroids(k,__initCentroids); // I don't know what's right anymore.
+    //calling function that will store points so we can
+    // assign in rest of the clusters.
+    __clusters[0]->pickCentroids(k,__initCentroids);
     for (int l = 0; l < __k; ++l) {
         __clusters[l]->centroid.set(*__initCentroids[l]);
     }
@@ -51,9 +53,11 @@ Clustering::KMeans::KMeans(unsigned int dim, unsigned int k, std::string filenam
 }
 
 Clustering::KMeans::~KMeans() {
+    // deleting clusters
     for (int i=0; i<__k; i++)
         delete __clusters[i];
     delete [] __clusters;
+    // deleting centroids.
     for (int i = 0; i < __k; ++i) {
         delete __initCentroids[i];
     }
@@ -133,6 +137,7 @@ void Clustering::KMeans::run() {
         }
         iter++;
     }
+
     __numIter = iter;
     __numMovesLastIter = moves;
 
