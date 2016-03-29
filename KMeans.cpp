@@ -30,8 +30,10 @@ Clustering::KMeans::KMeans(unsigned int dim, unsigned int k, std::string filenam
     }
     fileStream >> *__clusters[0];
 
+    //creating centroids on pickcentroid and assinging them
+    // in respective clusters
 
-    Point tempP(__dimensionality);
+//    Point tempP(__dimensionality);
     __initCentroids = new Point*[__k];
     for (int j = 0; j < k; ++j) {
         __initCentroids[j] = new Point(__dimensionality);
@@ -41,7 +43,7 @@ Clustering::KMeans::KMeans(unsigned int dim, unsigned int k, std::string filenam
         __clusters[l]->centroid.set(*__initCentroids[l]);
     }
 
-
+// rest of the assignment
     __maxIter = maxIter;
     __numIter= 0;
     __numNonempty=1;
@@ -94,26 +96,37 @@ void Clustering::KMeans::run() {
 
     int moves = 100;
     int iter = 0;
+
+    // stop loop if move is less than 100 and exceed the maximum iterator
     while(moves > 0 && iter < __maxIter){
         moves = 0;
+
+        // goint through all cluster and their points
         for (int i = 0; i < __k; ++i) {
-            for (int j = 0; j < __clusters[i]->getSize(); ++j) { // TODO
+            for (int j = 0; j < __clusters[i]->getSize(); ++j) {
+
                 int closestClust = 0;
                 Point currentP(__dimensionality);
                 currentP = __clusters[i]->operator[](j);
                 double distance = currentP.distanceTo(__clusters[closestClust]->centroid.get());
                 for (int k = 1; k < __k ; ++k) {
+
+                    // finding closest centroid.
                     if(distance > currentP.distanceTo(__clusters[k]->centroid.get())) {
                         distance = currentP.distanceTo(__clusters[k]->centroid.get());
                         closestClust = k;
                     }
                 }
+
+                // moving point if other centroid is closer
                 if(i != closestClust) {
                     Cluster::Move(currentP, *__clusters[i], *__clusters[closestClust]);
                     moves++;
                 }
             }
         }
+
+        // compute new centroid if it has new point(i.e. invalid centroid)
         for (int l = 0; l < __k; ++l) {
             if(!__clusters[l]->centroid.isValid())
                 __clusters[l]->centroid.compute();
@@ -123,6 +136,7 @@ void Clustering::KMeans::run() {
     __numIter = iter;
     __numMovesLastIter = moves;
 
+    // counting non empty cluster.
     for (int m = 1; m <__k ; ++m) {
         if(__clusters[m]->getSize()!= 0)
             __numNonempty++;

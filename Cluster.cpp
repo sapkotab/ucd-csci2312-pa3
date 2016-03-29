@@ -349,7 +349,7 @@ bool Clustering::operator==(const Cluster & lhs, const Cluster & rhs){
         currLhs = currLhs->next;
         currRhs = currRhs->next;
     }
-    if(currLhs !=nullptr || currRhs != nullptr)
+    if(currLhs !=nullptr || currRhs != nullptr) // if they are equal both should be null
         return false;
     else;
     return true;

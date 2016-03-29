@@ -274,7 +274,7 @@ std::istream & Clustering::operator >>(std::istream & input, Point & somePoint) 
 
     std::stringstream line(temp);
     for (int i = 0; i < somePoint.__dim; ++i) {
-        getline(line, temp, Point::POINT_VALUE_DELIM); // TODO error in the temp
+        getline(line, temp, Point::POINT_VALUE_DELIM); // error in the temp but still working
         std::stringstream ss(temp);
         ss >> somePoint.__values[i];
     }
